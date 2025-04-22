@@ -1,0 +1,195 @@
+<html>
+<head>
+    <title>SQS Messages</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden; /* Ensure rounded corners are visible */
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Button Styles */
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Textarea Styles */
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical; /* Allow vertical resizing */
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#refreshButton").click(function() {
+                $.ajax({
+                    url: "/get_sqs_messages",
+                    type: "GET",
+                    dataType: "json",
+                    success: function(data) {
+                        if (data.error) {
+                            $("#messageTableBody").html("<tr><td colspan='2'>Error: " + data.error + "</td></tr>");
+                            return;
+                        }
+
+                        var messages = data.messages;
+                        var tableBody = $("#messageTableBody");
+                        tableBody.empty(); // Clear existing messages
+
+                        if (messages.length > 0) {
+                            for (var i = 0; i < messages.length; i++) {
+                                var message = messages[i];
+                                var row = "<tr><td>" + message.timestamp + "</td><td>" + message.body + "</td></tr>";
+                                tableBody.append(row);
+                            }
+                        } else {
+                            tableBody.append("<tr><td colspan='2'>No messages found in the queue.</td></tr>");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX error:", status, error);
+                        $("#messageTableBody").html("<tr><td colspan='2'>Error: " + error + "</td></tr>");
+                    }
+                });
+            });
+
+            $("#createMessageButton").click(function() {
+                var messageText = $("#messageText").val();
+                $.ajax({
+                    url: "/create_message",
+                    type: "POST",
+                    data: { message_text: messageText },
+                    dataType: "json",
+                    success: function(data) {
+                        if (data.success) {
+                            $("#messageText").val(""); // Clear the text box
+                            alert(data.message); // Optional: Show a success message
+                        } else {
+                            alert("Error: " + data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX error:", status, error);
+                        alert("Error: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>SQS Messages</h1>
+        <p> Messages are created via API, using Lambda to create messages with random words which are sent AWS SQS. Client connect to web app running on EC2. Messages are polled when clicking "Poll Queue For New Messages", and deleted when they are polled. It is possible to create more messages via the form below, which is also using API to POST new messages.</p>
+        <img src="{{ url_for('static', filename='img.jpg') }}" alt="" />
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Message Body</th>
+                </tr>
+            </thead>
+            <tbody id="messageTableBody">
+                {% if messages %}
+                    {% for message in messages %}
+                        <tr>
+                            <td>{{ message.timestamp }}</td>
+                            <td>{{ message.body }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="2">No messages found in the queue.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+		<br>
+        <button id="refreshButton">Poll Queue For New Messages</button>
+		<br><br>
+        <h2>Send New Message To Queue</h2>
+        <textarea id="messageText" rows="4" cols="50"></textarea>
+        <br>
+		<br>
+        <button id="createMessageButton">Create Message</button>
+        <br>
+    </div>
+</body>
+</html>
