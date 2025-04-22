@@ -1,2 +1,17 @@
+# Environment variables
 .env
 
+# SSL Certificates and Keys
+*.pem
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+*.env
