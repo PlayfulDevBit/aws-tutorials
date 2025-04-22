@@ -2,6 +2,9 @@
 
 This is a sample Flask application demonstrating interaction with AWS SQS (Simple Queue Service) and AWS SSM (Systems Manager) Parameter Store. It was developed as part of a tutorial, potentially run on an EC2 instance via SSH, but can be adapted for other environments.
 
+![Projet visual description]([https://github.com/username/repo_name/path/to/image.jpg](https://github.com/PlayfulDevBit/aws-tutorials/blob/main/templates/static/img.jpg))
+
+
 > **⚠️ Important Security Notice:** This code is intended for **educational purposes**. Before using or deploying it, please review the following:
 >
 > 1.  **Sensitive Files:** **NEVER** commit sensitive files like your AWS credentials, `.env` files containing secrets, or SSL private keys (`.pem` files) to Git or any public repository. Ensure these are listed in your `.gitignore` file.
